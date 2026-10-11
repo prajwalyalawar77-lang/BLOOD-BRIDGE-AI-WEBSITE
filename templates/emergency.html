@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Blood Request | BloodBridge AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(180,40,40,.15), transparent 35%),
+                radial-gradient(circle at 80% 70%, rgba(255,70,30,.10), transparent 35%),
+                #08090d;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            width: 100%;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            background: rgba(8,9,13,.92);
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo span, .footer-logo span {
+            color: #ff4938;
+        }
+
+        .logo .logo-white {
+            color: #eee;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #d8d8d8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-links a:hover {
+            color: #ff604d;
+        }
+
+        .page {
+            width: 90%;
+            max-width: 1150px;
+            margin: 55px auto;
+        }
+
+        .heading {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .tag {
+            display: inline-block;
+            color: #ff624f;
+            border: 1px solid rgba(255,80,60,.4);
+            padding: 9px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+        }
+
+        .heading h1 {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        .heading h1 span {
+            color: #ff503d;
+        }
+
+        .heading p {
+            color: #aaa;
+            font-size: 16px;
+            max-width: 700px;
+            margin: auto;
+            line-height: 1.7;
+        }
+
+        .main-card, .results-card {
+            max-width: 900px;
+            margin: 0 auto 25px;
+            padding: 35px;
+            border-radius: 22px;
+            background: rgba(25,26,31,.95);
+            border: 1px solid rgba(255,255,255,.09);
+            box-shadow: 0 25px 80px rgba(0,0,0,.35);
+        }
+
+        .card-title {
+            margin-bottom: 25px;
+        }
+
+        .card-title h2 {
+            font-size: 25px;
+            margin-bottom: 7px;
+        }
+
+        .card-title p {
+            color: #999;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group > label {
+            color: #ddd;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 9px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 15px;
+            border-radius: 10px;
+            border: 1px solid #393b42;
+            background: #111217;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            transition: .3s;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #666;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #ff503d;
+            box-shadow: 0 0 0 3px rgba(255,80,61,.10);
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .priority-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .priority-option input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+
+        .priority-option label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 48px;
+            padding: 12px 8px;
+            border: 1px solid #393b42;
+            border-radius: 11px;
+            cursor: pointer;
+            color: #ccc;
+            margin: 0;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .priority-option input:checked + label {
+            border-color: #ff503d;
+            background: rgba(255,80,61,.12);
+            color: white;
+        }
+
+        .priority-option input:focus-visible + label {
+            outline: 2px solid #ff7045;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 28px;
+            padding: 16px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #ff4938, #ff7045);
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,70,50,.25);
+        }
+
+        .submit-btn:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #message {
+            margin-top: 18px;
+            padding: 13px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            line-height: 1.6;
+        }
+
+        #message.success {
+            display: block;
+            color: #8ff0ad;
+            background: rgba(40,180,90,.10);
+            border: 1px solid rgba(40,180,90,.25);
+        }
+
+        #message.error {
+            display: block;
+            color: #ff8b7d;
+            background: rgba(255,60,50,.10);
+            border: 1px solid rgba(255,60,50,.25);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 20px;
+            border: 1px solid #3a3b40;
+            border-radius: 10px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .back-btn:hover {
+            color: white;
+            border-color: #ff503d;
+        }
+
+        /* MATCH RESULTS */
+
+        #matchResults {
+            margin-top: 28px;
+        }
+
+        .results-card {
+            margin-bottom: 0;
+        }
+
+        .match-summary {
+            color: #aaa;
+            line-height: 1.7;
+            font-size: 14px;
+            margin: 10px 0 18px;
+        }
+
+        .match-item {
+            padding: 20px;
+            margin-top: 14px;
+            border-radius: 13px;
+            background: #111217;
+            border: 1px solid #393b42;
+        }
+
+        .match-item h3 {
+            font-size: 20px;
+            color: #ff604d;
+            margin-bottom: 12px;
+        }
+
+        .match-item p {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .match-badge {
+            display: inline-block;
+            margin: 0 0 12px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: rgba(255,80,61,.12);
+            color: #ff927f;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 11px 16px;
+            border-radius: 8px;
+            background: #ff503d;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .contact-btn:hover {
+            background: #e83d2c;
+        }
+
+        .notice {
+            margin-top: 18px;
+            padding: 14px;
+            border: 1px solid rgba(255,190,70,.25);
+            border-radius: 10px;
+            background: rgba(255,190,70,.07);
+            color: #e7c994;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .empty-state {
+            padding: 22px;
+            border: 1px solid #393b42;
+            border-radius: 12px;
+            text-align: center;
+            color: #bbb;
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 70px;
+            padding: 35px 20px;
+            border-top: 1px solid rgba(255,255,255,.07);
+        }
+
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        footer p {
+            color: #777;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 700px) {
+            .navbar {
+                padding: 18px 5%;
+                flex-direction: column;
+                gap: 18px;
+            }
+
+            .logo {
+                font-size: 21px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page {
+                width: 94%;
+                margin-top: 35px;
+            }
+
+            .heading h1 {
+                font-size: 32px;
+            }
+
+            .main-card, .results-card {
+                padding: 22px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+
+            .priority-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">
+        <span>🩸 BLOOD</span>
+        <span class="logo-white"> BRIDGE AI</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/blood-availability">Find Blood</a>
+        <a href="/emergency">Emergency</a>
+        <a href="/">Donate</a>
+    </div>
+</nav>
+
+<main class="page">
+
+    <div class="heading">
+        <div class="tag">🚨 EMERGENCY BLOOD REQUEST</div>
+
+        <h1>Need Blood <span>Immediately?</span></h1>
+
+        <p>
+            Submit an emergency blood request and search for
+            potentially compatible blood sources in the
+            BloodBridge AI network.
+        </p>
+    </div>
+
+    <section class="main-card">
+        <div class="card-title">
+            <h2>Create Emergency Request</h2>
+            <p>
+                Enter accurate patient, hospital, blood group,
+                and location information.
+            </p>
+        </div>
+
+        <form id="emergencyForm">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="patient_name">Patient Name</label>
+                    <input type="text" id="patient_name"
+                           name="patient_name"
+                           placeholder="Enter patient name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact_number">Contact Number</label>
+                    <input type="tel" id="contact_number"
+                           name="contact_number"
+                           placeholder="Enter contact number"
+                           autocomplete="tel" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="hospital_name">
+                        Hospital / Medical Center
+                    </label>
+                    <input type="text" id="hospital_name"
+                           name="hospital_name"
+                           placeholder="Enter hospital or medical center name"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="blood_group">Required Blood Group</label>
+                    <select id="blood_group" name="blood_group" required>
+                        <option value="">Select Blood Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="units">Required Units</label>
+                    <input type="number" id="units" name="units"
+                           min="1" step="1"
+                           placeholder="Example: 2" required>
+                </div>
+
+                <div class="form-group full">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location"
+                           placeholder="City / Area" required>
+                </div>
+
+                <div class="form-group full">
+                    <label>Emergency Priority</label>
+
+                    <div class="priority-options">
+                        <div class="priority-option">
+                            <input type="radio" id="critical"
+                                   name="priority" value="Critical" required>
+                            <label for="critical">🚨 Critical</label>
+                        </div>
+
+                        <div class="priority-option">
+                            <input type="radio" id="urgent"
+                                   name="priority" value="Urgent">
+                            <label for="urgent">⚠️ Urgent</label>
+                        </div>
+
+                        <div class="priority-option">
+                            <input type="radio" id="normal"
+                                   name="priority" value="Normal">
+                            <label for="normal">🟢 Normal</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label for="additional_info">
+                        Additional Information
+                    </label>
+                    <textarea id="additional_info"
+                              name="additional_info"
+                              placeholder="Enter any important information"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                🚨 SUBMIT REQUEST & FIND BLOOD
+            </button>
+
+            <div id="message" role="status" aria-live="polite"></div>
+        </form>
+
+        <a href="/" class="back-btn">← BACK TO DASHBOARD</a>
+    </section>
+
+    <!-- Matching results are displayed separately from the form. -->
+    <section id="matchResults" aria-live="polite"></section>
+
+</main>
+
+<footer>
+    <div class="footer-logo">🩸 <span>BLOOD</span> BRIDGE AI</div>
+    <p>Connecting blood. Connecting people. Saving lives.</p>
+    <p style="margin-top:12px;">
+        © 2026 BloodBridge AI • Emergency Blood Network
+    </p>
+</footer>
+
+<script>
+const emergencyForm = document.getElementById("emergencyForm");
+const submitBtn = document.getElementById("submitBtn");
+const message = document.getElementById("message");
+const matchResults = document.getElementById("matchResults");
+
+const originalButtonText = "🚨 SUBMIT REQUEST & FIND BLOOD";
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = type;
+    message.style.display = "block";
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        const replacements = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        };
+        return replacements[char];
+    });
+}
+
+function safePhone(value) {
+    // Only permit phone-number characters in a telephone link.
+    return String(value ?? "").replace(/[^0-9+*#,;]/g, "");
+}
+
+function displayMatches(data, requestedGroup) {
+    matchResults.replaceChildren();
+
+    const card = document.createElement("div");
+    card.className = "results-card";
+
+    const heading = document.createElement("div");
+    heading.className = "card-title";
+
+    const title = document.createElement("h2");
+    title.textContent = data.results.length
+        ? "🩸 Potential Blood Matches"
+        : "No Matching Providers Found";
+
+    const summary = document.createElement("p");
+    summary.className = "match-summary";
+    summary.textContent = data.results.length
+        ? `Requested group: ${requestedGroup}. Found ${data.results.length} potential provider(s).`
+        : `No compatible blood entries were found in the current network for ${requestedGroup}.`;
+
+    heading.append(title, summary);
+    card.appendChild(heading);
+
+    if (data.results.length) {
+        data.results.forEach(function(item) {
+            const provider = document.createElement("div");
+            provider.className = "match-item";
+
+            const badge = document.createElement("div");
+            badge.className = "match-badge";
+            badge.textContent = item.match_scope || "Potential match";
+
+            const name = document.createElement("h3");
+            name.textContent =
+                `🩸 ${item.blood_group} — ${item.units} unit(s)`;
+
+            const details = document.createElement("p");
+            details.textContent =
+                `Provider: ${item.name || "Not provided"}\n` +
+                `Provider type: ${item.provider_type || "Not provided"}\n` +
+                `Location: ${item.location || "Not provided"}\n` +
+                `Stock status: ${item.status || "Not provided"}`;
+
+            details.style.whiteSpace = "pre-line";
+
+            provider.append(badge, name, details);
+
+            const phone = safePhone(item.phone);
+
+            if (phone) {
+                const contact = document.createElement("a");
+                contact.className = "contact-btn";
+                contact.href = `tel:${phone}`;
+                contact.textContent = "📞 CONTACT PROVIDER";
+                provider.appendChild(contact);
+            }
+
+            card.appendChild(provider);
+        });
+    } else {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent =
+            "Try contacting a local hospital or blood bank, " +
+            "or check the network again later.";
+        card.appendChild(empty);
+    }
+
+    const notice = document.createElement("div");
+    notice.className = "notice";
+    notice.textContent = data.verification_note ||
+        "These are preliminary potential matches. A hospital or blood bank must verify compatibility, actual stock, crossmatching, and patient suitability before transfusion.";
+
+    card.appendChild(notice);
+    matchResults.appendChild(card);
+}
+
+async function findMatchingBlood(bloodGroup, location) {
+    matchResults.replaceChildren();
+
+    const loading = document.createElement("div");
+    loading.className = "results-card";
+    loading.textContent = "🔎 Searching the blood network...";
+    matchResults.appendChild(loading);
+
+    try {
+        const response = await fetch("/emergency-matches", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                blood_group: bloodGroup,
+                location: location
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to find matches.");
+        }
+
+        displayMatches(data, bloodGroup);
+    } catch (error) {
+        console.error("Blood matching error:", error);
+
+        matchResults.replaceChildren();
+
+        const errorCard = document.createElement("div");
+        errorCard.className = "results-card";
+
+        const errorText = document.createElement("p");
+        errorText.textContent =
+            "The emergency request was submitted, but matching results " +
+            "could not be loaded. Please try searching again.";
+
+        errorText.style.color = "#ff8b7d";
+        errorCard.appendChild(errorText);
+        matchResults.appendChild(errorCard);
+    }
+}
+
+emergencyForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    message.className = "";
+    message.style.display = "none";
+    message.textContent = "";
+
+    const patient_name =
+        document.getElementById("patient_name").value.trim();
+
+    const contact_number =
+        document.getElementById("contact_number").value.trim();
+
+    const hospital_name =
+        document.getElementById("hospital_name").value.trim();
+
+    const blood_group =
+        document.getElementById("blood_group").value;
+
+    const units =
+        document.getElementById("units").value;
+
+    const location =
+        document.getElementById("location").value.trim();
+
+    const priorityElement =
+        document.querySelector('input[name="priority"]:checked');
+
+    const priority = priorityElement ? priorityElement.value : "";
+
+    const additional_info =
+        document.getElementById("additional_info").value.trim();
+
+    if (
+        !patient_name || !contact_number || !hospital_name ||
+        !blood_group || !units || !location || !priority
+    ) {
+        showMessage("Please complete all required fields.", "error");
+        return;
+    }
+
+    if (!Number.isInteger(Number(units)) || Number(units) < 1) {
+        showMessage("Required units must be a positive whole number.", "error");
+        return;
+    }
+
+    const requestData = {
+        patient_name,
+        contact_number,
+        hospital_name,
+        blood_group,
+        units: Number(units),
+        location,
+        priority,
+        additional_info
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting Emergency Request...";
+
+    try {
+        const response = await fetch("/submit-emergency", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to submit request.");
+        }
+
+        showMessage(
+            `✓ ${data.message} Request ID: ${data.request_id}`,
+            "success"
+        );
+
+        // Search using the values captured before the form is reset.
+        // A matching failure will not undo the saved emergency request.
+        await findMatchingBlood(blood_group, location);
+
+        emergencyForm.reset();
+
+    } catch (error) {
+        console.error("Emergency submission error:", error);
+
+        showMessage(
+            error.message || "Unable to connect to the server.",
+            "error"
+        );
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalButtonText;
+    }
+});
+</script>
+
+</body>
+</html>

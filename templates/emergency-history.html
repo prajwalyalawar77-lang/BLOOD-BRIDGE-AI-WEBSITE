@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency History | BloodBridge AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 15% 15%, #25100f, transparent 35%),
+                #0d0d0d;
+            color: white;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #151515;
+            padding: 20px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff4938;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: #ff604d;
+        }
+
+        .header {
+            text-align: center;
+            padding: 45px 20px 30px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 span {
+            color: #ff4938;
+        }
+
+        .header p {
+            color: #aaa;
+            line-height: 1.7;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1250px;
+            margin: 15px auto 50px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .count {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .refresh-btn,
+        .save-btn,
+        .back-button {
+            background: linear-gradient(135deg, #e83d2c, #ff6548);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            padding: 12px 17px;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .refresh-btn:hover,
+        .save-btn:hover,
+        .back-button:hover {
+            background: #c93427;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        #historyContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 22px;
+        }
+
+        .history-card {
+            background: #191919;
+            border: 1px solid #353535;
+            border-radius: 17px;
+            padding: 23px;
+            min-width: 0;
+            transition: .25s;
+        }
+
+        .history-card:hover {
+            border-color: #8f302b;
+            transform: translateY(-3px);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .request-id {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .priority {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .critical {
+            background: #7d1717;
+            color: white;
+        }
+
+        .urgent {
+            background: #91451a;
+            color: white;
+        }
+
+        .normal {
+            background: #315f3a;
+            color: white;
+        }
+
+        .patient {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            overflow-wrap: anywhere;
+        }
+
+        .hospital {
+            color: #bbb;
+            margin-bottom: 19px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .blood {
+            font-size: 30px;
+            font-weight: bold;
+            color: #ff604d;
+            margin-bottom: 18px;
+        }
+
+        .details {
+            display: grid;
+            gap: 11px;
+            color: #ccc;
+            font-size: 13px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            border-bottom: 1px solid #303030;
+            padding-bottom: 10px;
+        }
+
+        .detail-label {
+            color: #929292;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .pending {
+            background: #755316;
+            color: #ffe0a0;
+        }
+
+        .fulfilled {
+            background: #195c38;
+            color: #a4f2c0;
+        }
+
+        .cancelled {
+            background: #702727;
+            color: #ffb4b4;
+        }
+
+        .other-status {
+            background: #454545;
+            color: white;
+        }
+
+        .additional-info {
+            margin-top: 15px;
+            padding: 13px;
+            background: #101010;
+            border-radius: 9px;
+            color: #bbb;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .date {
+            margin-top: 16px;
+            color: #888;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .status-editor {
+            margin-top: 22px;
+            padding: 16px;
+            background: #111;
+            border: 1px solid #383838;
+            border-radius: 12px;
+        }
+
+        .status-editor label {
+            display: block;
+            margin-bottom: 10px;
+            color: #eee;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .status-select {
+            width: 100%;
+            padding: 12px;
+            background: #202020;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .status-select:focus {
+            border-color: #ff604d;
+        }
+
+        .save-btn {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .message {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 22px;
+            background: #191919;
+            border: 1px solid #353535;
+            border-radius: 14px;
+            color: #bbb;
+            line-height: 1.7;
+        }
+
+        .error {
+            color: #ff8b7d;
+            border-color: #73312c;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        .back-wrapper {
+            text-align: center;
+            margin: 35px 0 45px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+            border-top: 1px solid #292929;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 700px) {
+            nav {
+                flex-direction: column;
+                gap: 17px;
+            }
+
+            .nav-links {
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .container {
+                width: 94%;
+            }
+
+            #historyContainer {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">🩸 BLOOD BRIDGE AI</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/blood-availability">Find Blood</a>
+        <a href="/emergency">Emergency</a>
+        <a href="/emergency-history-page">History</a>
+    </div>
+</nav>
+
+<header class="header">
+    <h1>Emergency Request <span>History</span></h1>
+    <p>View requests and manage their current status.</p>
+</header>
+
+<main class="container">
+
+    <div id="loading" class="message">
+        🩸 Loading emergency requests...
+    </div>
+
+    <div id="error" class="message error" hidden></div>
+
+    <div id="empty" class="message" hidden>
+        <h2>No Emergency Requests</h2>
+        <p style="margin-top:10px;">
+            No emergency blood requests have been submitted yet.
+        </p>
+    </div>
+
+    <div class="toolbar" id="toolbar" hidden>
+        <div class="count" id="count"></div>
+        <button type="button" class="refresh-btn" id="refreshBtn">
+            ↻ Refresh History
+        </button>
+    </div>
+
+    <div id="historyContainer"></div>
+
+</main>
+
+<div class="back-wrapper">
+    <a href="/" class="back-button">← Back to Home</a>
+</div>
+
+<footer>
+    🩸 BLOOD BRIDGE AI
+    <p>Connecting blood. Connecting people. Saving lives.</p>
+    <p>© 2026 BloodBridge AI • Emergency Blood Network</p>
+</footer>
+
+<script>
+const loading = document.getElementById("loading");
+const errorBox = document.getElementById("error");
+const empty = document.getElementById("empty");
+const toolbar = document.getElementById("toolbar");
+const count = document.getElementById("count");
+const container = document.getElementById("historyContainer");
+const refreshBtn = document.getElementById("refreshBtn");
+
+function makeElement(tag, className, text) {
+    const element = document.createElement(tag);
+
+    if (className) {
+        element.className = className;
+    }
+
+    if (text !== undefined && text !== null) {
+        element.textContent = String(text);
+    }
+
+    return element;
+}
+
+function addDetail(parent, label, value) {
+    const row = makeElement("div", "detail-row");
+
+    row.append(
+        makeElement("span", "detail-label", label),
+        makeElement(
+            "span",
+            "detail-value",
+            value === undefined || value === null || value === ""
+                ? "Not provided"
+                : value
+        )
+    );
+
+    parent.appendChild(row);
+}
+
+function formatDate(value) {
+    if (!value) return "Not available";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    return date.toLocaleString();
+}
+
+function statusClass(value) {
+    const status = String(value || "").toLowerCase();
+
+    if (status === "pending") return "pending";
+    if (status === "fulfilled") return "fulfilled";
+    if (status === "cancelled") return "cancelled";
+
+    return "other-status";
+}
+
+function createRequestCard(request) {
+    const card = makeElement("article", "history-card");
+
+    // Request ID and priority
+    const top = makeElement("div", "card-top");
+
+    top.appendChild(
+        makeElement(
+            "span",
+            "request-id",
+            "Request #" + (request.id ?? "—")
+        )
+    );
+
+    const priorityText = String(request.priority || "Normal");
+    const priorityKey = priorityText.toLowerCase();
+
+    let priorityStyle = "normal";
+
+    if (priorityKey.includes("critical")) {
+        priorityStyle = "critical";
+    } else if (priorityKey.includes("urgent")) {
+        priorityStyle = "urgent";
+    }
+
+    top.appendChild(
+        makeElement("span", "priority " + priorityStyle, priorityText)
+    );
+
+    // Patient and hospital details
+    const patient = makeElement(
+        "div",
+        "patient",
+        request.patient_name || "Unknown patient"
+    );
+
+    const hospital = makeElement(
+        "div",
+        "hospital",
+        "🏥 " + (request.hospital_name || "Hospital not provided")
+    );
+
+    const blood = makeElement(
+        "div",
+        "blood",
+        "🩸 " + (request.blood_group || "Unknown")
+    );
+
+    // Request information
+    const details = makeElement("div", "details");
+
+    addDetail(details, "Required Units", request.units);
+    addDetail(details, "Location", request.location);
+    addDetail(
+        details,
+        "Contact",
+        request.patient_phone || request.contact_number
+    );
+
+    // Current saved status badge
+    const statusRow = makeElement("div", "detail-row");
+
+    statusRow.appendChild(
+        makeElement("span", "detail-label", "Status")
+    );
+
+    const statusBadge = makeElement(
+        "span",
+        "status " + statusClass(request.status),
+        request.status || "Pending"
+    );
+
+    statusRow.appendChild(statusBadge);
+    details.appendChild(statusRow);
+
+    card.append(top, patient, hospital, blood, details);
+
+    // Additional information
+    if (request.additional_info) {
+        card.appendChild(
+            makeElement(
+                "div",
+                "additional-info",
+                "Additional information: " + request.additional_info
+            )
+        );
+    }
+
+    card.appendChild(
+        makeElement(
+            "div",
+            "date",
+            "Submitted: " + formatDate(request.created_at)
+        )
+    );
+
+    // STATUS EDITOR
+    const editor = makeElement("div", "status-editor");
+
+    const label = makeElement(
+        "label",
+        "",
+        "Update Emergency Request Status"
+    );
+
+    const select = document.createElement("select");
+    select.className = "status-select";
+    select.setAttribute("aria-label", "Choose a new status");
+
+    const allowedStatuses = ["Pending", "Fulfilled", "Cancelled"];
+
+    allowedStatuses.forEach(function(status) {
+        const option = document.createElement("option");
+        option.value = status;
+        option.textContent = status;
+        select.appendChild(option);
+    });
+
+    const currentStatus = String(request.status || "").toLowerCase();
+
+    if (allowedStatuses.some(
+        status => status.toLowerCase() === currentStatus
+    )) {
+        select.value = allowedStatuses.find(
+            status => status.toLowerCase() === currentStatus
+        );
+    } else {
+        // Existing values such as "Critical" are preserved until
+        // the user explicitly chooses and saves a new status.
+        select.value = "Pending";
+    }
+
+    const saveButton = makeElement(
+        "button",
+        "save-btn",
+        "✓ SAVE STATUS"
+    );
+    saveButton.type = "button";
+
+    const feedback = makeElement("p", "status-message");
+    feedback.setAttribute("role", "status");
+    feedback.setAttribute("aria-live", "polite");
+
+    label.htmlFor = "status-" + request.id;
+    select.id = "status-" + request.id;
+
+    editor.append(label, select, saveButton, feedback);
+    card.appendChild(editor);
+
+    // Save the selected status to Flask and SQLite.
+    saveButton.addEventListener("click", async function() {
+        saveButton.disabled = true;
+        select.disabled = true;
+        saveButton.textContent = "SAVING...";
+        feedback.textContent = "";
+
+        try {
+            const response = await fetch("/update-emergency-status", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    request_id: request.id,
+                    status: select.value
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.success !== true) {
+                throw new Error(
+                    result.message || "Unable to update status."
+                );
+            }
+
+            // Update the displayed badge only after the server confirms.
+            statusBadge.textContent = result.status;
+            statusBadge.className =
+                "status " + statusClass(result.status);
+
+            request.status = result.status;
+
+            feedback.textContent = "✓ Status saved successfully!";
+            feedback.style.color = "#8ff0ad";
+
+            saveButton.textContent = "✓ SAVED";
+
+        } catch (err) {
+            console.error("Status update error:", err);
+
+            feedback.textContent =
+                err.message || "Unable to save status. Try again.";
+
+            feedback.style.color = "#ff8b7d";
+            saveButton.textContent = "RETRY SAVE";
+
+        } finally {
+            saveButton.disabled = false;
+            select.disabled = false;
+        }
+    });
+
+    return card;
+}
+
+async function loadEmergencyHistory() {
+    loading.hidden = false;
+    errorBox.hidden = true;
+    empty.hidden = true;
+    toolbar.hidden = true;
+    container.replaceChildren();
+
+    refreshBtn.disabled = true;
+
+    try {
+        // This endpoint returns JSON records from the database.
+        const response = await fetch("/emergency-requests", {
+            headers: {
+                "Accept": "application/json"
+            },
+            cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success !== true) {
+            throw new Error(
+                data.message || "Unable to retrieve emergency requests."
+            );
+        }
+
+        // The existing Flask API returns records in data.results.
+        const requests = Array.isArray(data.results)
+            ? data.results
+            : [];
+
+        loading.hidden = true;
+
+        if (requests.length === 0) {
+            empty.hidden = false;
+            return;
+        }
+
+        count.textContent =
+            "📋 " + requests.length + " emergency request(s)";
+
+        toolbar.hidden = false;
+
+        requests.forEach(function(request) {
+            container.appendChild(createRequestCard(request));
+        });
+
+    } catch (err) {
+        console.error("Emergency history error:", err);
+
+        loading.hidden = true;
+        errorBox.textContent =
+            "Unable to load emergency history. Please check your Flask server and try again.";
+        errorBox.hidden = false;
+
+    } finally {
+        refreshBtn.disabled = false;
+    }
+}
+
+refreshBtn.addEventListener("click", loadEmergencyHistory);
+
+loadEmergencyHistory();
+</script>
+
+</body>
+</html>
